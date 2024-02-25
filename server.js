@@ -7,8 +7,8 @@ const port = 3030
 
 const io = require("socket.io")(server, {
   cors: {
-    origin: '*'
-  }
+    origin: "*",
+  },
 })
 const { ExpressPeerServer } = require("peer")
 const opinions = {
@@ -35,8 +35,13 @@ io.on("connection", (socket) => {
     socket.on("message", (message) => {
       io.to(roomId).emit("createMessage", message, userName)
     })
+
+    socket.on("disconnect", () => {
+      socket.to(roomId).broadcast.emit("user-disconnected", userId)
+    })
   })
 })
+
 server.listen(port, () => {
   console.log(`server is running on port:${port}`)
 })
