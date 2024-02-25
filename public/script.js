@@ -37,14 +37,33 @@ navigator.mediaDevices
     myVideoStream = stream
     addVideoStream(myVideo, stream)
 
+    const peers = {}
+
+    // در اینجا به ازای هر کاربر یک کلید منحصر به فرد ایجاد می‌شود که مربوط به تماس است.
     peer.on("call", (call) => {
-      console.log('someone call me')
-      call.answer(stream)
+      call.answer(myVideoStream)
       const video = document.createElement("video")
       call.on("stream", (userVideoStream) => {
         addVideoStream(video, userVideoStream)
       })
     })
+
+    socket.on("user-disconnected", (userId) => {
+      if (peers[userId]) peers[userId].close()
+    })
+
+    const connectToNewUser = (userId, stream) => {
+      const call = peer.call(userId, stream)
+      const video = document.createElement("video")
+      call.on("stream", (userVideoStream) => {
+        addVideoStream(video, userVideoStream)
+      })
+      call.on("close", () => {
+        video.remove()
+      })
+
+      peers[userId] = call
+    }
 
     socket.on("user-connected", (userId) => {
       connectToNewUser(userId, stream)
