@@ -22,9 +22,9 @@ showChat.addEventListener("click", () => {
 const user = prompt("Enter your name")
 
 let peer = new Peer({
-  host: '127.0.0.1',
+  host: "127.0.0.1",
   port: 3030,
-  path: '/peerjs',
+  path: "/peerjs",
 })
 
 let myVideoStream
@@ -37,50 +37,43 @@ navigator.mediaDevices
     myVideoStream = stream
     addVideoStream(myVideo, stream)
 
-    const peers = {}
-
-    // در اینجا به ازای هر کاربر یک کلید منحصر به فرد ایجاد می‌شود که مربوط به تماس است.
     peer.on("call", (call) => {
-      call.answer(myVideoStream)
+      call.answer(stream)
       const video = document.createElement("video")
       call.on("stream", (userVideoStream) => {
         addVideoStream(video, userVideoStream)
       })
     })
-
-    socket.on("user-disconnected", (userId) => {
-      if (peers[userId]) peers[userId].close()
-    })
-
-    const connectToNewUser = (userId, stream) => {
-      const call = peer.call(userId, stream)
-      const video = document.createElement("video")
-      call.on("stream", (userVideoStream) => {
-        addVideoStream(video, userVideoStream)
-      })
-      call.on("close", () => {
-        video.remove()
-      })
-
-      peers[userId] = call
-    }
 
     socket.on("user-connected", (userId) => {
       connectToNewUser(userId, stream)
     })
+
+    // When user disconnects, remove their video
+    socket.on("user-disconnected", (userId) => {
+      if (peers[userId]) {
+        peers[userId].close()
+        delete peers[userId]
+      }
+    })
   })
 
+const peers = {}
+
 const connectToNewUser = (userId, stream) => {
-  console.log('I call someone' + userId)
   const call = peer.call(userId, stream)
   const video = document.createElement("video")
   call.on("stream", (userVideoStream) => {
     addVideoStream(video, userVideoStream)
   })
+  call.on("close", () => {
+    video.remove()
+  })
+
+  peers[userId] = call
 }
 
 peer.on("open", (id) => {
-  console.log('my id is' + id)
   socket.emit("join-room", ROOM_ID, id, user)
 })
 
