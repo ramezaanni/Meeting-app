@@ -36,6 +36,7 @@ io.on("connection", (socket) => {
       io.to(roomId).emit("createMessage", message, userName)
     })
 
+    // When user disconnects, inform others and disconnect all calls related to this user
     socket.on("disconnect", () => {
       socket.to(roomId).broadcast.emit("user-disconnected", userId)
     })
