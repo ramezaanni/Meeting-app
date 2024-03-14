@@ -11,4 +11,4 @@ This app is build using NodeJS, Socket.io, and Peerjs(WebRTC)
 3. Open the command prompt from your project directory and run the command `npm start`.
 4. Go to your browser and type `http://localhost:3030/` in the address bar.
 5. Hurray! That's it.
-
+Reza Ramezani
